@@ -50,11 +50,25 @@ public class AppointmentController {
         return appointmentRepository.findById(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
-    @GetMapping("/appointment/user/{id}")
-    @Operation(summary = "Retrieve appointment by id", description = "Retrieve appointment by user id")
+    @GetMapping("/appointment/byuser/{id}")
+    @Operation(summary = "Retrieve appointment by user id", description = "Retrieve appointment by user id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByUserId(@PathVariable("id") Integer id) {
         return appointmentRepository.findAllByUserId(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+    }
+
+    @GetMapping("/appointment/bydoctor/{id}")
+    @Operation(summary = "Retrieve all appointment by doctor id", description = "Retrieve all appointment by doctor id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
+    public Flux<AppointmentDetails> getAppointmentByDoctorId(@PathVariable("id") String id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return appointmentRepository.findAllByDoctorId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+    }
+
+    @GetMapping("/appointment/byclinic/{id}")
+    @Operation(summary = "Retrieve all appointment by clinic id", description = "Retrieve all appointment by clinic id")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
+    public Flux<AppointmentDetails> getAppointmentByClinicId(@PathVariable("id") Integer id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return appointmentRepository.findAllByClinicId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     //TODO Fix this
@@ -89,7 +103,7 @@ public class AppointmentController {
                     existingAppointment.setSymptom(updatedAppointmentDetails.getSymptom());
                     existingAppointment.setOtherSymptoms(updatedAppointmentDetails.getOtherSymptoms());
                     existingAppointment.setAppointmentDate(updatedAppointmentDetails.getAppointmentDate());
-                    existingAppointment.setDoctorName(updatedAppointmentDetails.getDoctorName());
+                    existingAppointment.setDoctorId(updatedAppointmentDetails.getDoctorId());
                     existingAppointment.setClinicId(updatedAppointmentDetails.getClinicId());
                     existingAppointment.setActive(updatedAppointmentDetails.isActive());
                     // Save the updated appointment

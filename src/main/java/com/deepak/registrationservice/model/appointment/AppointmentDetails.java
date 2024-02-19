@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 @Table(name = "appointments")
 public class AppointmentDetails {
 
-    @Hidden
     @Id
     @Column("appointmentId")
     private Integer appointmentId;
@@ -43,12 +42,11 @@ public class AppointmentDetails {
 
     @Schema(description = "Appointment For Name", example = "Deepak Sharma")
     @Column("appointment_for_name")
-    @Max(150)
     private String appointmentForName;
 
     @Schema(description = "Age of person seeking appointment", example = "25")
     @Column("appointment_for_age")
-    private String appointmentForAge;
+    private Integer appointmentForAge;
 
     @Schema(description = "Symptoms", example = "HEADACHE")
     @Column("symptom")
@@ -64,12 +62,12 @@ public class AppointmentDetails {
     private LocalDateTime appointmentDate;
 
     @Schema(description = "Doctors Name", example = "Dr Dinesh Child Specialist")
-    @Column("doctor_name")
-    private String doctorName;
+    @Column("doctor_id")
+    private String doctorId;
 
     @Schema(description = "Clinic Name", example = "Dr Dinesh Child Specialist Clinic")
     @Column("clinic_id")
-    private String clinicId;
+    private Integer clinicId;
 
     @Column("active")
     @Schema(description = "Active or Not", example = "true")
