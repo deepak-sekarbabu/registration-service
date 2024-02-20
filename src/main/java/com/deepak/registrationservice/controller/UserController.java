@@ -47,7 +47,7 @@ public class UserController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User retrieved by id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Mono<User> getUserById(@PathVariable Integer id) {
         return userRepository.findById(id).map(user -> {
-            LOGGER.info("Retrieved user with ID: {}", user.toString());
+            LOGGER.info("Retrieved user with ID: {}", user);
             return user;
         }).switchIfEmpty(Mono.error(new UserNotFoundException("User not found with id: " + id)));
     }
@@ -67,7 +67,7 @@ public class UserController {
     @Operation(summary = "Create a new User")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User created"), @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "409", description = "User already exists")})
     public Mono<User> createUser(@RequestBody User user) {
-        LOGGER.info("Creating user: {}", user.toString());
+        LOGGER.info("Creating user: {}", user);
         return userRepository.save(user).doOnSuccess(createdUser -> LOGGER.info("User Id : {} has been created", createdUser.getId()));
     }
 

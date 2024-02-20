@@ -4,9 +4,8 @@ import com.deepak.registrationservice.model.appointment.enums.AppointmentFor;
 import com.deepak.registrationservice.model.appointment.enums.AppointmentType;
 import com.deepak.registrationservice.model.appointment.enums.Symptom;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +41,7 @@ public class AppointmentDetails {
 
     @Schema(description = "Appointment For Name", example = "Deepak Sharma")
     @Column("appointment_for_name")
+    @Size(max = 256, message = "Name must be at most 100 characters long")
     private String appointmentForName;
 
     @Schema(description = "Age of person seeking appointment", example = "25")
@@ -54,7 +54,7 @@ public class AppointmentDetails {
 
     @Schema(description = "Other Symptoms", example = "Vomiting etc")
     @Column("other_symptoms")
-    @Max(250)
+    @Size(max = 256, message = "Other symptoms must be at most 256 characters long")
     private String otherSymptoms;
 
     @Schema(description = "Appointment Date", example = "2023-12-24T16:25:48.748Z")
