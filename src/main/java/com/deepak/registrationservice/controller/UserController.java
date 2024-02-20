@@ -10,19 +10,21 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/v1")
 @Tag(name = "User", description = "Handles CRUD operations for User registration")
-@Validated
 public class UserController {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
     private final UserRepository userRepository;
@@ -56,6 +58,7 @@ public class UserController {
     @Operation(summary = "Retrieve a user by phone number")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User retrieved by phone number", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Mono<User> getUserByPhoneNumber(@PathVariable String phoneNumber) {
+        LOGGER.info("Attempting to retrieve user with phoneNumber: {}", phoneNumber);
         return userRepository.findByPhoneNumber(phoneNumber).flatMap(user -> {
             LOGGER.info("Retrieved user with phoneNumber: {}", phoneNumber);
             return Mono.just(user);
@@ -66,9 +69,14 @@ public class UserController {
     @PostMapping("/user")
     @Operation(summary = "Create a new User")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User created"), @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "409", description = "User already exists")})
-    public Mono<User> createUser(@RequestBody User user) {
+    public Mono<User> createUser(@Valid @RequestBody User user) {
         LOGGER.info("Creating user: {}", user);
-        return userRepository.save(user).doOnSuccess(createdUser -> LOGGER.info("User Id : {} has been created", createdUser.getId()));
+        return userRepository.save(user).doOnSuccess(createdUser -> LOGGER.info("User Id : {} has been created", createdUser.getId())).onErrorResume(e -> {
+            if (e instanceof MethodArgumentNotValidException) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid input", e);
+            }
+            return Mono.error(e);
+        });
     }
 
     @PutMapping("/user/{id}")

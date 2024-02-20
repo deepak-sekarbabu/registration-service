@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -24,6 +25,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorDetails> handleUserNotFoundException(UserNotFoundException ex) {
         ErrorDetails errorDetails = new ErrorDetails(String.valueOf(LocalDateTime.now()), "User not found", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDetails);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorDetails> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).message("Input Validation Failed").timestamp(String.valueOf(LocalDateTime.now())).build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
 
