@@ -39,7 +39,7 @@ public class UserController {
     @Operation(summary = "Retrieve all users", description = "Retrieve all users")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Users Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<User> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-
+        LOGGER.info("Retrieving all users");
         return userRepository.findAllBy(PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving users: {}", error.getMessage()));
 
     }
@@ -48,6 +48,7 @@ public class UserController {
     @Operation(summary = "Retrieve a user by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User retrieved by id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Mono<User> getUserById(@PathVariable Integer id) {
+        LOGGER.info("Retrieving user with ID: {}", id);
         return userRepository.findById(id).map(user -> {
             LOGGER.info("Retrieved user with ID: {}", user);
             return user;
@@ -83,6 +84,7 @@ public class UserController {
     @Operation(summary = "Update user information")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User information updated"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
+        LOGGER.info("Updating user with ID: {}", id);
         return userRepository.findById(id).flatMap(existingUser -> {
             existingUser.setName(user.getName());
             existingUser.setEmail(user.getEmail());
@@ -97,6 +99,7 @@ public class UserController {
     @Operation(summary = "delete user information by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "delete user information by id"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Mono<Void> deleteUserById(@PathVariable Integer id) {
+        LOGGER.info("Deleting user with ID: {}", id);
         return userRepository.findById(id).flatMap(user -> userRepository.delete(user).doOnSuccess(deletedUser -> LOGGER.info("Deleted user with ID: {}", id)).doOnError(error -> LOGGER.error("Error deleting user with ID {}: {}", id, error.getMessage()))).switchIfEmpty(Mono.fromRunnable(() -> LOGGER.warn("User with ID {} does not exist", id)));
     }
 

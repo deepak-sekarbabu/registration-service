@@ -39,6 +39,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve all appointments", description = "Retrieve all appointments")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAllAppointments(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        LOGGER.info("Retrieving all appointments");
         return appointmentRepository.findAllBy(PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
 
     }
@@ -47,6 +48,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve appointment by id", description = "Retrieve appointment by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<AppointmentDetails> getAppointment(@PathVariable("id") Integer id) {
+        LOGGER.info("Retrieving appointment by id {}", id);
         return appointmentRepository.findById(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
@@ -54,6 +56,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve appointment by user id", description = "Retrieve appointment by user id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByUserId(@PathVariable("id") Integer id) {
+        LOGGER.info("Retrieving appointment by user id {}", id);
         return appointmentRepository.findAllByUserId(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
@@ -61,6 +64,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve all appointment by doctor id", description = "Retrieve all appointment by doctor id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByDoctorId(@PathVariable("id") String id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        LOGGER.info("Retrieving appointment by doctor id {}", id);
         return appointmentRepository.findAllByDoctorId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
@@ -68,6 +72,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve all appointment by clinic id", description = "Retrieve all appointment by clinic id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByClinicId(@PathVariable("id") Integer id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        LOGGER.info("Retrieving appointment by clinic id {}", id);
         return appointmentRepository.findAllByClinicId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
@@ -76,6 +81,7 @@ public class AppointmentController {
     @Operation(summary = "Retrieve all appointments between a date range", description = "Retrieve all appointments between a specified date range")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "No appointments found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Flux<AppointmentDetails> getAppointmentsBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
+        LOGGER.info("Retrieving appointments between dates {}", fromDate + " and " + toDate);
         return appointmentRepository.findAllByAppointmentDateBetween(fromDate, toDate).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
