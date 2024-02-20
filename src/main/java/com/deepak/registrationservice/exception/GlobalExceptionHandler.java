@@ -17,6 +17,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex) {
         LOGGER.error("An error occurred: {}", ex.getMessage());
+        //ex.printStackTrace();
         ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).timestamp(String.valueOf(LocalDateTime.now())).details(ex.getLocalizedMessage()).build();
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -76,14 +78,35 @@ public class AppointmentController {
         return appointmentRepository.findAllByClinicId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
-    //TODO Fix this
+
     @GetMapping("/appointments/between/{fromDate}/{toDate}")
     @Operation(summary = "Retrieve all appointments between a date range", description = "Retrieve all appointments between a specified date range")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "No appointments found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
-    public Flux<AppointmentDetails> getAppointmentsBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate) {
-        LOGGER.info("Retrieving appointments between dates {}", fromDate + " and " + toDate);
-        return appointmentRepository.findAllByAppointmentDateBetween(fromDate, toDate).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+    public Flux<AppointmentDetails> getAppointmentsBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        LOGGER.info("Retrieving appointments between dates {} and {}", fromDate, toDate);
+        return appointmentRepository.findAllByAppointmentDateBetween(fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
+
+    @GetMapping("/appointments/bydoctorid/{doctorId}/between/{fromDate}/{toDate}")
+    @Operation(summary = "Retrieve all appointments for a doctor between a date range", description = "Retrieve all appointments for a specified doctor between a specified date range")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "No appointments found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
+    public Flux<AppointmentDetails> getAppointmentsByDoctorIdBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate, @PathVariable String doctorId) {
+        LOGGER.info("Retrieving appointments for doctor {} between dates {} and {}", doctorId, fromDate, toDate);
+        LocalDateTime startOfDay = fromDate.atStartOfDay();
+        LocalDateTime endOfDay = toDate.atTime(LocalTime.MAX);
+        return appointmentRepository.findAllByDoctorIdAndAppointmentDateBetween(doctorId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+    }
+
+    @GetMapping("/appointments/byclinicid/{clinicId}/between/{fromDate}/{toDate}")
+    @Operation(summary = "Retrieve all appointments for a clinic between a date range", description = "Retrieve all appointments for a specified clinic between a specified date range")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "No appointments found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
+    public Flux<AppointmentDetails> getAppointmentsByClinicIdBetweenDates(@PathVariable Integer clinicId, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        LOGGER.info("Retrieving appointments for clinic {} between dates {} and {}", clinicId, fromDate, toDate);
+        LocalDateTime startOfDay = fromDate.atStartOfDay();
+        LocalDateTime endOfDay = toDate.atTime(LocalTime.MAX);
+        return appointmentRepository.findAllByClinicIdAndAppointmentDateBetween(clinicId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+    }
+
 
     @PostMapping("/appointments")
     @Operation(summary = "Create an appointment or multiple appointment", description = "Create an appointment")

@@ -19,4 +19,9 @@ public interface AppointmentRepository extends R2dbcRepository<AppointmentDetail
     Flux<AppointmentDetails> findAllByClinicId(Integer clinicId, Pageable pageable);
 
     Flux<AppointmentDetails> findAllByAppointmentDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    Flux<AppointmentDetails> findAllByDoctorIdAndAppointmentDateBetween(String doctorId, LocalDateTime startDate, LocalDateTime endDate);
+
+    Flux<AppointmentDetails> findAllByClinicIdAndAppointmentDateBetween(Integer clinicId, LocalDateTime startDate, LocalDateTime endDate);
+
 }

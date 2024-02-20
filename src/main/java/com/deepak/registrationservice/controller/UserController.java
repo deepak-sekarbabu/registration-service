@@ -83,7 +83,7 @@ public class UserController {
     @PutMapping("/user/{id}")
     @Operation(summary = "Update user information")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User information updated"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
-    public Mono<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
+    public Mono<User> updateUser(@PathVariable Integer id,@Valid @RequestBody User user) {
         LOGGER.info("Updating user with ID: {}", id);
         return userRepository.findById(id).flatMap(existingUser -> {
             existingUser.setName(user.getName());
