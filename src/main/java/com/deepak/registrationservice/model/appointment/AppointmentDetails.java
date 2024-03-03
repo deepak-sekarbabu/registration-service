@@ -61,6 +61,10 @@ public class AppointmentDetails {
     @Column("appointment_date")
     private LocalDateTime appointmentDate;
 
+    @Schema(description = "Slot Id", example = "1")
+    @Column("slot_id")
+    private Integer slotId;
+
     @Schema(description = "Doctors Name", example = "Dr Dinesh Child Specialist")
     @Column("doctor_id")
     private String doctorId;
