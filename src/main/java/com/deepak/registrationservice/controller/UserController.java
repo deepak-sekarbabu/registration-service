@@ -13,9 +13,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/user/by/id/{id}")
     @Operation(summary = "Retrieve a user by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User retrieved by id", content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
-    public Mono<User> getUserById(@PathVariable Integer id) {
+    public Mono<User> getUserById(@PathVariable @NonNull Integer id) {
         LOGGER.info("Retrieving user with ID: {}", id);
         return this.userRepository.findById(id).map(user -> {
             LOGGER.info("Retrieved user with ID: {}", user);
@@ -82,7 +82,7 @@ public class UserController {
     @PutMapping("/user/{id}")
     @Operation(summary = "Update user information")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User information updated"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
-    public Mono<User> updateUser(@PathVariable Integer id,@Valid @RequestBody User user) {
+    public Mono<User> updateUser(@PathVariable @NonNull Integer id,@Valid @RequestBody User user) {
         LOGGER.info("Updating user with ID: {}", id);
         return this.userRepository.findById(id).flatMap(existingUser -> {
             existingUser.setName(user.getName());
@@ -97,7 +97,7 @@ public class UserController {
     @DeleteMapping("/user/{id}")
     @Operation(summary = "delete user information by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "delete user information by id"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
-    public Mono<Void> deleteUserById(@PathVariable Integer id) {
+    public Mono<Void> deleteUserById(@PathVariable @NonNull Integer id) {
         LOGGER.info("Deleting user with ID: {}", id);
         return this.userRepository.findById(id).flatMap(user -> this.userRepository.delete(user).doOnSuccess(deletedUser -> LOGGER.info("Deleted user with ID: {}", id)).doOnError(error -> LOGGER.error("Error deleting user with ID {}: {}", id, error.getMessage()))).switchIfEmpty(Mono.fromRunnable(() -> LOGGER.warn("User with ID {} does not exist", id)));
     }
