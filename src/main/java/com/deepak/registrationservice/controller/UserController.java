@@ -81,7 +81,7 @@ public class UserController {
 
     @PutMapping("/user/{id}")
     @Operation(summary = "Update user information")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "User information updated"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "User information updated"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<User> updateUser(@PathVariable @NonNull Integer id,@Valid @RequestBody User user) {
         LOGGER.info("Updating user with ID: {}", id);
         return this.userRepository.findById(id).flatMap(existingUser -> {
@@ -96,11 +96,10 @@ public class UserController {
 
     @DeleteMapping("/user/{id}")
     @Operation(summary = "delete user information by id")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "delete user information by id"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
+    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "User deleted"), @ApiResponse(responseCode = "404", description = "User does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Mono<Void> deleteUserById(@PathVariable @NonNull Integer id) {
         LOGGER.info("Deleting user with ID: {}", id);
-        return this.userRepository.findById(id).flatMap(user -> this.userRepository.delete(user).doOnSuccess(deletedUser -> LOGGER.info("Deleted user with ID: {}", id)).doOnError(error -> LOGGER.error("Error deleting user with ID {}: {}", id, error.getMessage()))).switchIfEmpty(Mono.fromRunnable(() -> LOGGER.warn("User with ID {} does not exist", id)));
+        return this.userRepository.findById(id).flatMap(user -> this.userRepository.delete(user).doOnSuccess(deletedUser -> LOGGER.info("Deleted user with ID: {}", id)).doOnError(error -> LOGGER.error("Error deleting user with ID {}: {}", id, error.getMessage()))).switchIfEmpty(Mono.error(new UserNotFoundException("User not found with ID: " + id)));
     }
-
 
 }

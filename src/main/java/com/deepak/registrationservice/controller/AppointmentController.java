@@ -3,7 +3,6 @@ package com.deepak.registrationservice.controller;
 import com.deepak.registrationservice.exception.ErrorDetails;
 import com.deepak.registrationservice.model.appointment.AppointmentDetails;
 import com.deepak.registrationservice.model.appointment.QueueManagement;
-import com.deepak.registrationservice.model.appointment.SlotInformation;
 import com.deepak.registrationservice.repository.AppointmentRepository;
 import com.deepak.registrationservice.repository.QueueManagementRepository;
 import com.deepak.registrationservice.repository.SlotInformationRepository;
@@ -54,7 +53,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAllAppointments(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         LOGGER.info("Retrieving all appointments");
-        return appointmentRepository.findAllBy(PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllBy(PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
 
     }
 
@@ -63,7 +62,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<AppointmentDetails> getAppointment(@PathVariable("id") Integer id) {
         LOGGER.info("Retrieving appointment by id {}", id);
-        return appointmentRepository.findById(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findById(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @GetMapping("/appointment/byuser/{id}")
@@ -71,7 +70,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByUserId(@PathVariable("id") @NonNull Integer id) {
         LOGGER.info("Retrieving appointment by user id {}", id);
-        return appointmentRepository.findAllByUserId(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByUserId(id).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @GetMapping("/appointment/bydoctor/{id}")
@@ -79,7 +78,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByDoctorId(@PathVariable("id") @NonNull String id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         LOGGER.info("Retrieving appointment by doctor id {}", id);
-        return appointmentRepository.findAllByDoctorId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByDoctorId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @GetMapping("/appointment/byclinic/{id}")
@@ -87,7 +86,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Flux<AppointmentDetails> getAppointmentByClinicId(@PathVariable("id") Integer id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         LOGGER.info("Retrieving appointment by clinic id {}", id);
-        return appointmentRepository.findAllByClinicId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByClinicId(id, PageRequest.of(page, size)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
 
@@ -96,7 +95,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "No appointments found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
     public Flux<AppointmentDetails> getAppointmentsBetweenDates(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate, @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
         LOGGER.info("Retrieving appointments between dates {} and {}", fromDate, toDate);
-        return appointmentRepository.findAllByAppointmentDateBetween(fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByAppointmentDateBetween(fromDate.atStartOfDay(), toDate.atTime(LocalTime.MAX)).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @GetMapping("/appointments/bydoctorid/{doctorId}/between/{fromDate}/{toDate}")
@@ -106,7 +105,7 @@ public class AppointmentController {
         LOGGER.info("Retrieving appointments for doctor {} between dates {} and {}", doctorId, fromDate, toDate);
         LocalDateTime startOfDay = fromDate.atStartOfDay();
         LocalDateTime endOfDay = toDate.atTime(LocalTime.MAX);
-        return appointmentRepository.findAllByDoctorIdAndAppointmentDateBetween(doctorId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByDoctorIdAndAppointmentDateBetween(doctorId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @GetMapping("/appointments/byclinicid/{clinicId}/between/{fromDate}/{toDate}")
@@ -116,7 +115,7 @@ public class AppointmentController {
         LOGGER.info("Retrieving appointments for clinic {} between dates {} and {}", clinicId, fromDate, toDate);
         LocalDateTime startOfDay = fromDate.atStartOfDay();
         LocalDateTime endOfDay = toDate.atTime(LocalTime.MAX);
-        return appointmentRepository.findAllByClinicIdAndAppointmentDateBetween(clinicId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
+        return this.appointmentRepository.findAllByClinicIdAndAppointmentDateBetween(clinicId, startOfDay, endOfDay).doOnError(error -> LOGGER.error("Error retrieving appointments: {}", error.getMessage()));
     }
 
     @PostMapping("/appointments")
@@ -133,33 +132,52 @@ public class AppointmentController {
                 queueManagement.setSlotId(savedAppointment.getSlotId());
                 queueManagement.setClinicId(savedAppointment.getClinicId());
                 queueManagement.setDoctorId(savedAppointment.getDoctorId());
-                queueManagement.setDoctorId(savedAppointment.getDoctorId());
-                SlotInformation slotInformation = this.slotInformationRepository.findById(savedAppointment.getSlotId().intValue()).block();
-                if (slotInformation != null) {
-                    queueManagement.setInitialQueueNo(slotInformation.getSlotNo());
-                    queueManagement.setCurrentQueueNo(slotInformation.getSlotNo());
+                // Check if slotId is null before attempting to find SlotInformation
+                if (savedAppointment.getSlotId() != null) {
+                    return this.slotInformationRepository.findById(savedAppointment.getSlotId().intValue()).flatMap(slotInformation -> {
+                        if (slotInformation != null) {
+                            queueManagement.setInitialQueueNo(slotInformation.getSlotNo());
+                            queueManagement.setCurrentQueueNo(slotInformation.getSlotNo());
+                        }
+                        queueManagement.setCancelled(false);
+                        queueManagement.setAdvancePaid(false);
+                        queueManagement.setAdvanceRevertIfPaid(false);
+                        queueManagement.setPatientReached(false);
+                        queueManagement.setVisitStatus(null);
+                        queueManagement.setConsultationFeePaid(false);
+                        queueManagement.setConsultationFeeAmount(null);
+                        queueManagement.setTransactionIdAdvanceFee(null);
+                        queueManagement.setTransactionIdConsultationFee(null);
+                        queueManagement.setTransactionIdAdvanceRevert(null);
+                        queueManagement.setDate(Date.valueOf(LocalDate.now()));
+                        // Save the QueueManagement entity
+                        return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
+                    });
                 } else {
+                    // If slotId is null, directly proceed to setting queue management details and saving the entity
                     LOGGER.info("Join the Queue for the appointment Id : {}", savedAppointment.getAppointmentId());
                     queueManagement.setInitialQueueNo(null);
                     queueManagement.setCurrentQueueNo(null);
+                    queueManagement.setCancelled(false);
+                    queueManagement.setAdvancePaid(false);
+                    queueManagement.setAdvanceRevertIfPaid(false);
+                    queueManagement.setPatientReached(false);
+                    queueManagement.setVisitStatus(null);
+                    queueManagement.setConsultationFeePaid(false);
+                    queueManagement.setConsultationFeeAmount(null);
+                    queueManagement.setTransactionIdAdvanceFee(null);
+                    queueManagement.setTransactionIdConsultationFee(null);
+                    queueManagement.setTransactionIdAdvanceRevert(null);
+                    queueManagement.setDate(Date.valueOf(LocalDate.now()));
+                    // Save the QueueManagement entity
+                    return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
                 }
-                queueManagement.setCancelled(false);
-                queueManagement.setAdvancePaid(false);
-                queueManagement.setAdvanceRevertIfPaid(false);
-                queueManagement.setPatientReached(false);
-                queueManagement.setVisitStatus(null);
-                queueManagement.setConsultationFeePaid(false);
-                queueManagement.setConsultationFeeAmount(null);
-                queueManagement.setTransactionIdAdvanceFee(null);
-                queueManagement.setTransactionIdConsultationFee(null);
-                queueManagement.setTransactionIdAdvanceRevert(null);
-                queueManagement.setDate(Date.valueOf(LocalDate.now()));
-                return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
             }));
         }
         // Collect the saved appointments
         return Flux.concat(savedAppointments).collectList().doOnError(error -> LOGGER.error("Error creating appointments: {}", error.getMessage()));
     }
+
 
     @PutMapping("/appointments/{id}")
     @Operation(summary = "Update an appointment by ID", description = "Update an appointment by its ID")
@@ -186,6 +204,7 @@ public class AppointmentController {
                 .defaultIfEmpty(ResponseEntity.notFound().build()) // Handle case where appointment with given ID is not found
                 .doOnError(error -> LOGGER.error("Error updating appointment with ID {}: {}", id, error.getMessage()));
     }
+
 
     @DeleteMapping("/appointment/{id}")
     @Operation(summary = "Delete appointment by id", description = "Delete appointment by id")
