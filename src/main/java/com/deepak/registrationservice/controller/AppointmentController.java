@@ -150,8 +150,11 @@ public class AppointmentController {
                         queueManagement.setTransactionIdConsultationFee(null);
                         queueManagement.setTransactionIdAdvanceRevert(null);
                         queueManagement.setDate(Date.valueOf(LocalDate.now()));
-                        // Save the QueueManagement entity
-                        return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
+
+                        return slotInformationRepository.findById(savedAppointment.getSlotId().intValue()).flatMap(information -> {
+                            information.setIsAvailable(false);
+                            return slotInformationRepository.save(information);
+                        }).then(queueManagementRepository.save(queueManagement).thenReturn(savedAppointment));
                     });
                 } else {
                     // If slotId is null, directly proceed to setting queue management details and saving the entity
@@ -173,6 +176,7 @@ public class AppointmentController {
                     return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
                 }
             }));
+
         }
         // Collect the saved appointments
         return Flux.concat(savedAppointments).collectList().doOnError(error -> LOGGER.error("Error creating appointments: {}", error.getMessage()));
