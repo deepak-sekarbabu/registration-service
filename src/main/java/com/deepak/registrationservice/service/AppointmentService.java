@@ -14,4 +14,8 @@ public interface AppointmentService {
     Mono<List<AppointmentDetails>> savedAppointment(List<AppointmentDetails> appointmentDetailsList) throws DuplicateEntryException, SlotIdNotAvailableException;
 
     Mono<AppointmentDetails> updateAppointment(Integer id, AppointmentDetails updatedAppointmentDetails);
+
+    Mono<Void> deleteAppointment(Integer id);
+
+    Mono<Void> cancelAppointment(Integer id);
 }

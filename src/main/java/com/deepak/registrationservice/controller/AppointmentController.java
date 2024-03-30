@@ -130,11 +130,19 @@ public class AppointmentController {
         return this.appointmentService.updateAppointment(id, updatedAppointmentDetails);
     }
 
+    @PutMapping("/appointments/cancel/{id}")
+    @Operation(summary = "Cancel an appointment by ID", description = "Cancel an appointment by its ID")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointment cancelled successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
+    public Mono<Void> cancelAppointmentById(@PathVariable("id") @NonNull Integer id) throws AppointmentNotFoundException {
+        LOGGER.info("Cancelling appointment with id: {} : {}", id);
+        return this.appointmentService.cancelAppointment(id);
+    }
+
     @DeleteMapping("/appointment/{id}")
     @Operation(summary = "Delete appointment by id", description = "Delete appointment by id")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "appointments Deleted", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "appointment does not exist", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<Void> deleteAppointment(@PathVariable("id") @NonNull Integer id) {
         LOGGER.info("Received request to delete appointment with id: {}", id);
-        return this.appointmentRepository.deleteById(id).doOnError(error -> LOGGER.error("Error deleting appointment: {}", error.getMessage()));
+        return appointmentService.deleteAppointment(id);
     }
 }

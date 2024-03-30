@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 public class AppointmentDetails {
 
     @Id
-    @Column("appointmentId")
+    @Column("appointment_id")
     private Integer appointmentId;
 
     @Column("user_id")

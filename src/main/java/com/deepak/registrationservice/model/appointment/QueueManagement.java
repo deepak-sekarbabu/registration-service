@@ -16,7 +16,7 @@ public class QueueManagement {
     @Column("queue_management_id")
     private Integer queueManagementId;
 
-    @Column("appointmentId")
+    @Column("appointment_id")
     private Integer appointmentId;
 
     @Column("slot_id")
