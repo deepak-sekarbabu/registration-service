@@ -1,5 +1,6 @@
 package com.deepak.registrationservice.controller;
 
+import com.deepak.registrationservice.exception.AppointmentNotFoundException;
 import com.deepak.registrationservice.exception.DuplicateEntryException;
 import com.deepak.registrationservice.exception.ErrorDetails;
 import com.deepak.registrationservice.exception.SlotIdNotAvailableException;
@@ -16,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -124,12 +124,11 @@ public class AppointmentController {
 
     @PutMapping("/appointments/{id}")
     @Operation(summary = "Update an appointment by ID", description = "Update an appointment by its ID")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointment updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
-    public Mono<ResponseEntity<AppointmentDetails>> updateAppointmentById(@PathVariable("id") @NonNull Integer id, @RequestBody AppointmentDetails updatedAppointmentDetails) {
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointment updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class)))})
+    public Mono<AppointmentDetails> updateAppointmentById(@PathVariable("id") @NonNull Integer id, @RequestBody AppointmentDetails updatedAppointmentDetails) throws AppointmentNotFoundException {
         LOGGER.info("Updating appointment with id: {} : {}", id, updatedAppointmentDetails);
         return this.appointmentService.updateAppointment(id, updatedAppointmentDetails);
     }
-
 
     @DeleteMapping("/appointment/{id}")
     @Operation(summary = "Delete appointment by id", description = "Delete appointment by id")

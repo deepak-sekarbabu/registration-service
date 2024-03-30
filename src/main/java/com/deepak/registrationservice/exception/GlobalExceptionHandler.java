@@ -22,6 +22,15 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(AppointmentNotFoundException.class)
+    public ResponseEntity<Object> handleAppointmentNotFoundException(AppointmentNotFoundException ex) {
+        LOGGER.error("AppointmentNot Found error occurred: {}", ex.getMessage());
+        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).message("Not Found").timestamp(String.valueOf(LocalDateTime.now())).build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+
+    }
+
+
     @ExceptionHandler(SlotIdNotAvailableException.class)
     public ResponseEntity<Object> handleSlotIdNotAvailableException(SlotIdNotAvailableException ex) {
         LOGGER.error("Slot not available error occurred: {}", ex.getMessage());
