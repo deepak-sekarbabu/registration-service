@@ -14,12 +14,20 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex) {
-        LOGGER.error("An error occurred: {}", ex.getMessage());
-        //ex.printStackTrace();
-        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).timestamp(String.valueOf(LocalDateTime.now())).details(ex.getLocalizedMessage()).build();
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+    @ExceptionHandler(DuplicateEntryException.class)
+    public ResponseEntity<Object> handleDuplicateEntryException(DuplicateEntryException ex) {
+        LOGGER.error("Duplicate entry error occurred: {}", ex.getMessage());
+        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).message("Duplicate Entry").timestamp(String.valueOf(LocalDateTime.now())).build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+
+    }
+
+    @ExceptionHandler(SlotIdNotAvailableException.class)
+    public ResponseEntity<Object> handleSlotIdNotAvailableException(SlotIdNotAvailableException ex) {
+        LOGGER.error("Slot not available error occurred: {}", ex.getMessage());
+        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).message("Slot not available").timestamp(String.valueOf(LocalDateTime.now())).build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+
     }
 
     @ExceptionHandler(UserNotFoundException.class)
@@ -32,6 +40,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorDetails> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).message("Input Validation Failed").timestamp(String.valueOf(LocalDateTime.now())).build();
         return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex) {
+        LOGGER.error("An error occurred: {}", ex.getMessage());
+        ex.printStackTrace();
+        ErrorDetails errorDetails = ErrorDetails.builder().details(ex.getMessage()).timestamp(String.valueOf(LocalDateTime.now())).details(ex.getLocalizedMessage()).build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 

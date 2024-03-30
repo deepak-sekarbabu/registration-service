@@ -1,11 +1,11 @@
 package com.deepak.registrationservice.controller;
 
+import com.deepak.registrationservice.exception.DuplicateEntryException;
 import com.deepak.registrationservice.exception.ErrorDetails;
+import com.deepak.registrationservice.exception.SlotIdNotAvailableException;
 import com.deepak.registrationservice.model.appointment.AppointmentDetails;
-import com.deepak.registrationservice.model.appointment.QueueManagement;
 import com.deepak.registrationservice.repository.AppointmentRepository;
-import com.deepak.registrationservice.repository.QueueManagementRepository;
-import com.deepak.registrationservice.repository.SlotInformationRepository;
+import com.deepak.registrationservice.service.AppointmentServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,13 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.Date;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/v1")
@@ -39,13 +36,11 @@ public class AppointmentController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppointmentController.class);
     private final AppointmentRepository appointmentRepository;
-    private final QueueManagementRepository queueManagementRepository;
-    private final SlotInformationRepository slotInformationRepository;
+    private final AppointmentServiceImpl appointmentService;
 
-    public AppointmentController(AppointmentRepository appointmentRepository, QueueManagementRepository queueManagementRepository, SlotInformationRepository slotInformationRepository) {
+    public AppointmentController(AppointmentRepository appointmentRepository, AppointmentServiceImpl appointmentService) {
         this.appointmentRepository = appointmentRepository;
-        this.queueManagementRepository = queueManagementRepository;
-        this.slotInformationRepository = slotInformationRepository;
+        this.appointmentService = appointmentService;
     }
 
     @GetMapping("/appointments")
@@ -121,65 +116,9 @@ public class AppointmentController {
     @PostMapping("/appointments")
     @Operation(summary = "Create an appointment or multiple appointment", description = "Create an appointment")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointments retrieved", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "500", description = "Problem creating appointment", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
-    public Mono<List<AppointmentDetails>> createAppointments(@RequestBody List<AppointmentDetails> appointmentDetailsList) {
+    public Mono<List<AppointmentDetails>> createAppointments(@RequestBody List<AppointmentDetails> appointmentDetailsList) throws DuplicateEntryException, SlotIdNotAvailableException {
         LOGGER.info("Received request to create appointments: {}", appointmentDetailsList);
-        // Save each appointment and create a new record in QueueManagement table
-        List<Mono<AppointmentDetails>> savedAppointments = new ArrayList<>();
-        for (AppointmentDetails appointmentDetails : appointmentDetailsList) {
-            savedAppointments.add(this.appointmentRepository.save(Objects.requireNonNull(appointmentDetails)).flatMap(savedAppointment -> {
-                QueueManagement queueManagement = new QueueManagement();
-                queueManagement.setAppointmentId(savedAppointment.getAppointmentId());
-                queueManagement.setSlotId(savedAppointment.getSlotId());
-                queueManagement.setClinicId(savedAppointment.getClinicId());
-                queueManagement.setDoctorId(savedAppointment.getDoctorId());
-                // Check if slotId is null before attempting to find SlotInformation
-                if (savedAppointment.getSlotId() != null) {
-                    return this.slotInformationRepository.findById(savedAppointment.getSlotId().intValue()).flatMap(slotInformation -> {
-                        if (slotInformation != null) {
-                            queueManagement.setInitialQueueNo(slotInformation.getSlotNo());
-                            queueManagement.setCurrentQueueNo(slotInformation.getSlotNo());
-                        }
-                        queueManagement.setCancelled(false);
-                        queueManagement.setAdvancePaid(false);
-                        queueManagement.setAdvanceRevertIfPaid(false);
-                        queueManagement.setPatientReached(false);
-                        queueManagement.setVisitStatus(null);
-                        queueManagement.setConsultationFeePaid(false);
-                        queueManagement.setConsultationFeeAmount(null);
-                        queueManagement.setTransactionIdAdvanceFee(null);
-                        queueManagement.setTransactionIdConsultationFee(null);
-                        queueManagement.setTransactionIdAdvanceRevert(null);
-                        queueManagement.setDate(Date.valueOf(LocalDate.now()));
-
-                        return slotInformationRepository.findById(savedAppointment.getSlotId().intValue()).flatMap(information -> {
-                            information.setIsAvailable(false);
-                            return slotInformationRepository.save(information);
-                        }).then(queueManagementRepository.save(queueManagement).thenReturn(savedAppointment));
-                    });
-                } else {
-                    // If slotId is null, directly proceed to setting queue management details and saving the entity
-                    LOGGER.info("Join the Queue for the appointment Id : {}", savedAppointment.getAppointmentId());
-                    queueManagement.setInitialQueueNo(null);
-                    queueManagement.setCurrentQueueNo(null);
-                    queueManagement.setCancelled(false);
-                    queueManagement.setAdvancePaid(false);
-                    queueManagement.setAdvanceRevertIfPaid(false);
-                    queueManagement.setPatientReached(false);
-                    queueManagement.setVisitStatus(null);
-                    queueManagement.setConsultationFeePaid(false);
-                    queueManagement.setConsultationFeeAmount(null);
-                    queueManagement.setTransactionIdAdvanceFee(null);
-                    queueManagement.setTransactionIdConsultationFee(null);
-                    queueManagement.setTransactionIdAdvanceRevert(null);
-                    queueManagement.setDate(Date.valueOf(LocalDate.now()));
-                    // Save the QueueManagement entity
-                    return this.queueManagementRepository.save(queueManagement).thenReturn(savedAppointment);
-                }
-            }));
-
-        }
-        // Collect the saved appointments
-        return Flux.concat(savedAppointments).collectList().doOnError(error -> LOGGER.error("Error creating appointments: {}", error.getMessage()));
+        return this.appointmentService.savedAppointment(appointmentDetailsList);
     }
 
 
@@ -188,25 +127,7 @@ public class AppointmentController {
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Appointment updated successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AppointmentDetails.class))), @ApiResponse(responseCode = "404", description = "Appointment not found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))), @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDetails.class))),})
     public Mono<ResponseEntity<AppointmentDetails>> updateAppointmentById(@PathVariable("id") @NonNull Integer id, @RequestBody AppointmentDetails updatedAppointmentDetails) {
         LOGGER.info("Updating appointment with id: {} : {}", id, updatedAppointmentDetails);
-        return this.appointmentRepository.findById(id).flatMap(existingAppointment -> {
-                    // Update fields of existing appointment with new details
-                    existingAppointment.setAppointmentDate(updatedAppointmentDetails.getAppointmentDate());
-                    existingAppointment.setUserId(updatedAppointmentDetails.getUserId());
-                    existingAppointment.setAppointmentType(updatedAppointmentDetails.getAppointmentType());
-                    existingAppointment.setAppointmentFor(updatedAppointmentDetails.getAppointmentFor());
-                    existingAppointment.setAppointmentForName(updatedAppointmentDetails.getAppointmentForName());
-                    existingAppointment.setAppointmentForAge(updatedAppointmentDetails.getAppointmentForAge());
-                    existingAppointment.setSymptom(updatedAppointmentDetails.getSymptom());
-                    existingAppointment.setOtherSymptoms(updatedAppointmentDetails.getOtherSymptoms());
-                    existingAppointment.setAppointmentDate(updatedAppointmentDetails.getAppointmentDate());
-                    existingAppointment.setDoctorId(updatedAppointmentDetails.getDoctorId());
-                    existingAppointment.setClinicId(updatedAppointmentDetails.getClinicId());
-                    existingAppointment.setActive(updatedAppointmentDetails.isActive());
-                    // Save the updated appointment
-                    return this.appointmentRepository.save(existingAppointment);
-                }).map(ResponseEntity::ok) // Map the updated appointment to ResponseEntity
-                .defaultIfEmpty(ResponseEntity.notFound().build()) // Handle case where appointment with given ID is not found
-                .doOnError(error -> LOGGER.error("Error updating appointment with ID {}: {}", id, error.getMessage()));
+        return this.appointmentService.updateAppointment(id, updatedAppointmentDetails);
     }
 
 
