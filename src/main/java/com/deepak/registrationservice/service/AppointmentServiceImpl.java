@@ -117,19 +117,20 @@ public class AppointmentServiceImpl implements AppointmentService {
                             return this.slotInformationRepository.findById(existingAppointment.getSlotId())
                                     .flatMap(slotInfo -> {
                                         slotInfo.setIsAvailable(true);
-                                        return this.slotInformationRepository.save(slotInfo);
-                                    }).then(this.slotInformationRepository
-                                            .findById(updatedAppointmentDetails.getSlotId()).flatMap(slotInfo -> {
-                                                slotInfo.setIsAvailable(false);
-                                                existingAppointment.setSlotId(updatedAppointmentDetails.getSlotId());
-                                                return this.slotInformationRepository.save(slotInfo);
-                                            }))
-                                    .then(this.queueManagementRepository.findByAppointmentId(id)
-                                            .flatMap(queueManagement -> {
+                                        return this.slotInformationRepository.save(slotInfo)
+                                                .then(this.slotInformationRepository.findById(updatedAppointmentDetails.getSlotId())
+                                                        .flatMap(updatedSlotInfo -> {
+                                            updatedSlotInfo.setIsAvailable(false);
+                                            existingAppointment.setSlotId(updatedAppointmentDetails.getSlotId());
+                                            return this.slotInformationRepository.save(updatedSlotInfo)
+                                                    .then(this.queueManagementRepository.findByAppointmentId(id).flatMap(queueManagement -> {
+                                                queueManagement.setInitialQueueNo(updatedSlotInfo.getSlotNo());
+                                                queueManagement.setCurrentQueueNo(updatedSlotInfo.getSlotNo());
                                                 queueManagement.setSlotId(updatedAppointmentDetails.getSlotId());
                                                 return this.queueManagementRepository.save(queueManagement);
-                                            }))
-                                    .then(this.appointmentRepository.save(existingAppointment));
+                                            })).then(this.appointmentRepository.save(existingAppointment));
+                                        }));
+                                    });
                         });
                     } else {
                         return Mono.error(new SlotIdNotAvailableException("Slot not available"));
