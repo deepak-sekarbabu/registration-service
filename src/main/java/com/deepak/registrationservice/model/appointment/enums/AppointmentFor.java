@@ -6,12 +6,15 @@ import lombok.Getter;
 @Getter
 @Schema(enumAsRef = true)
 public enum AppointmentFor {
-    SELF("Self"), SPOUSE("Spouse"), KIDS("Kids"), PARENTS("Parents"), OTHERS("Others");
+  SELF("Self"),
+  SPOUSE("Spouse"),
+  KIDS("Kids"),
+  PARENTS("Parents"),
+  OTHERS("Others");
 
-    private final String displayName;
+  private final String displayName;
 
-    AppointmentFor(String displayName) {
-        this.displayName = displayName;
-    }
-
+  AppointmentFor(String displayName) {
+    this.displayName = displayName;
+  }
 }

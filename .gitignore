@@ -88,3 +88,5 @@ target/sonar/report-task.txt
 /.idea/sonarlint/issuestore/f/e/fecf0604c30a4b49fde053359fb38a0b7dec2c5f
 /.idea/sonarlint/securityhotspotstore/f/e/fecf0604c30a4b49fde053359fb38a0b7dec2c5f
 /.vscode/launch.json
+/.idea/aws.xml
+/target/spotless-index

@@ -6,12 +6,15 @@ import lombok.Getter;
 @Getter
 @Schema(enumAsRef = true)
 public enum AppointmentType {
-    GENERAL_CHECKUP("General Checkup"), DENTAL("Dental Checkup"), VACCINATION("Vaccination"), CONSULTATION("Consultation"), FOLLOW_UP("Follow-up");
+  GENERAL_CHECKUP("General Checkup"),
+  DENTAL("Dental Checkup"),
+  VACCINATION("Vaccination"),
+  CONSULTATION("Consultation"),
+  FOLLOW_UP("Follow-up");
 
-    private final String displayName;
+  private final String displayName;
 
-    AppointmentType(String displayName) {
-        this.displayName = displayName;
-    }
-
+  AppointmentType(String displayName) {
+    this.displayName = displayName;
+  }
 }

@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface QueueManagementRepository extends R2dbcRepository<QueueManagement, Integer> {
 
-    Mono<QueueManagement> findByAppointmentId(Integer appointmentId);
+  Mono<QueueManagement> findByAppointmentId(Integer appointmentId);
 
-    Mono<Void> deleteByAppointmentId(Integer appointmentId);
+  Mono<Void> deleteByAppointmentId(Integer appointmentId);
 }
