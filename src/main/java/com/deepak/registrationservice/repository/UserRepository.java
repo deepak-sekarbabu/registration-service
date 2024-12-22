@@ -10,11 +10,11 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface UserRepository extends R2dbcRepository<User, Integer> {
 
-    Flux<User> findAll();
+  Flux<User> findAll();
 
-    Flux<User> findAllBy(Pageable pageable);
+  Flux<User> findAllBy(Pageable pageable);
 
-    Mono<User> findById(Integer id);
+  Mono<User> findById(Integer id);
 
-    Mono<User> findByPhoneNumber(String phoneNumber);
+  Mono<User> findByPhoneNumber(String phoneNumber);
 }
