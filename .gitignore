@@ -90,3 +90,4 @@ target/sonar/report-task.txt
 /.vscode/launch.json
 /.idea/aws.xml
 /target/spotless-index
+*.gz
