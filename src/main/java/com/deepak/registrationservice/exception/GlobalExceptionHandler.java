@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -79,18 +78,21 @@ public class GlobalExceptionHandler {
     LOGGER.error("Validation error: {}", ex.getMessage(), ex);
 
     // Collect field errors in a user-friendly way
-    List<Map<String, String>> fieldErrors = ex.getFieldErrors().stream()
-        .map(fieldError -> Map.of(
-            "field", fieldError.getField(),
-            "message", fieldError.getDefaultMessage()
-        ))
-        .collect(Collectors.toList());
+    List<Map<String, String>> fieldErrors =
+        ex.getFieldErrors().stream()
+            .map(
+                fieldError ->
+                    Map.of(
+                        "field", fieldError.getField(),
+                        "message", fieldError.getDefaultMessage()))
+            .collect(Collectors.toList());
 
-    ErrorDetails errorDetails = ErrorDetails.builder()
-        .timestamp(String.valueOf(LocalDateTime.now()))
-        .message("Validation Failed")
-        .details(fieldErrors.toString())
-        .build();
+    ErrorDetails errorDetails =
+        ErrorDetails.builder()
+            .timestamp(String.valueOf(LocalDateTime.now()))
+            .message("Validation Failed")
+            .details(fieldErrors.toString())
+            .build();
 
     return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
   }
