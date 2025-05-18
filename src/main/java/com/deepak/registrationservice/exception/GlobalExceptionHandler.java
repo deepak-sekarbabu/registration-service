@@ -1,6 +1,10 @@
 package com.deepak.registrationservice.exception;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -8,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.support.WebExchangeBindException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -66,6 +71,27 @@ public class GlobalExceptionHandler {
             .message("Input Validation Failed")
             .timestamp(String.valueOf(LocalDateTime.now()))
             .build();
+    return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(WebExchangeBindException.class)
+  public ResponseEntity<ErrorDetails> handleWebExchangeBindException(WebExchangeBindException ex) {
+    LOGGER.error("Validation error: {}", ex.getMessage(), ex);
+
+    // Collect field errors in a user-friendly way
+    List<Map<String, String>> fieldErrors = ex.getFieldErrors().stream()
+        .map(fieldError -> Map.of(
+            "field", fieldError.getField(),
+            "message", fieldError.getDefaultMessage()
+        ))
+        .collect(Collectors.toList());
+
+    ErrorDetails errorDetails = ErrorDetails.builder()
+        .timestamp(String.valueOf(LocalDateTime.now()))
+        .message("Validation Failed")
+        .details(fieldErrors.toString())
+        .build();
+
     return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
   }
 
